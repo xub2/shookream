@@ -32,6 +32,12 @@ public class Event {
     @OneToMany(mappedBy = "event")
     private List<Ticket> tickets = new ArrayList<>();
 
+//    @Column(nullable = false)
+    private Integer maxTicketCount;
+
+//    @Column(nullable = false)
+    private Integer currentTicketStockCount;
+
     private String eventName;
 
     @Enumerated(EnumType.STRING)
@@ -41,12 +47,29 @@ public class Event {
     private EventTime eventTime;
 
     @Builder
-    public Event(Venue venue, Seller seller, String eventName, EventType eventType, EventTime eventTime) {
+    public Event(Venue venue, Seller seller, String eventName, EventType eventType, EventTime eventTime, Integer maxTicketCount) {
         this.venue = venue;
         this.seller = seller;
         this.eventName = eventName;
         this.eventType = eventType;
         this.eventTime = eventTime;
+        this.maxTicketCount = maxTicketCount;
+        this.currentTicketStockCount = maxTicketCount; // 생성 시점에는 동일
     }
 
+    public void decreaseTicketStock() {
+        if (this.currentTicketStockCount <= 0) {
+            throw new IllegalStateException("표 재고가 부족합니다.");
+        }
+
+        this.currentTicketStockCount--;
+    }
+
+    public void increaseTicketStock() {
+        if (this.currentTicketStockCount >= this.maxTicketCount) {
+            return;
+        }
+
+        this.currentTicketStockCount++;
+    }
 }
