@@ -1,7 +1,6 @@
-package kream.shookream.entity;
+package kream.shookream.domain;
 
 import kream.shookream.config.IntegrationTest;
-import kream.shookream.domain.*;
 import kream.shookream.domain.embedded.EventTime;
 import kream.shookream.repository.*;
 import lombok.extern.slf4j.Slf4j;
