@@ -31,6 +31,7 @@ public class OrderTicket {
 
     private LocalDateTime createdAt;
 
+    // 구매 시점의 최종가
     private Integer purchase_price;
 
     @Builder
@@ -40,4 +41,22 @@ public class OrderTicket {
         this.createdAt = createdAt;
         this.purchase_price = purchase_price;
     }
+
+    public void cancelPurchase() {
+        // 1. 연관된 Ticket 객체의 상태를 AVAILABLE로 복구
+        Ticket ticket = this.getTicket(); // @Getter로 접근
+        ticket.revertToAvailable();       // Ticket.java에 구현된 메서드
+
+        // 2. Ticket이 복구되었으므로, 해당 Ticket이 속한 Event의 재고를 증가시켜야 합니다.
+        // Event 객체는 Ticket 내부에 참조되고 있습니다.
+        Event event = ticket.getEvent(); // Ticket.java에 Event 객체 Getter가 있다고 가정
+        event.increaseTicketStock();           // Event.java에 구현된 재고 증가 메서드
+    }
+
+    // 필요한 필드만 넣기
+    public void setOrder(Order order) {
+        this.order = order;
+    }
+
+
 }

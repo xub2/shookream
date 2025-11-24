@@ -21,6 +21,7 @@ public class Ticket {
     private Long id;
 
     // 하나의 이벤트에는 여러 티켓 가능 1:N
+    // 즉, Event안에 Ticket 객체가 maxTicketCount 만큼 존재함.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id")
     private Event event;
@@ -36,9 +37,11 @@ public class Ticket {
 
     private String seatInfo;
 
+
+    // 원가
     private Integer ticketPrice;
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private TicketStatus status;
 
     @Builder
@@ -48,5 +51,30 @@ public class Ticket {
         this.seatInfo = seatInfo;
         this.ticketPrice = ticketPrice;
         this.status = status;
+    }
+
+    // 티켓 판매 가능한지 검사
+    public boolean isAvailable() {
+        return this.status == TicketStatus.AVAILABLE;
+    }
+
+    public void sell() {
+        if (!isAvailable()) {
+            throw new IllegalStateException("이미 매진된 표입니다.");
+        }
+
+        this.status = TicketStatus.SOLDOUT;
+    }
+
+    public void revertToAvailable() {
+        if (this.status != TicketStatus.SOLDOUT) {
+            throw new IllegalStateException("취소가 불가능한 표입니다.");
+        }
+
+        this.status = TicketStatus.AVAILABLE;
+    }
+
+    public void setEvent(Event event) {
+        this.event = event;
     }
 }
