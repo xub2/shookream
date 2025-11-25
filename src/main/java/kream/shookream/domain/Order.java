@@ -11,7 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "orders", indexes = {
+        // IDX_ORDER_MEMBER_TIME: 회원별 주문 내역을 최신순으로 조회 (Filesort 제거)
+        // DB의 물리적 컬럼명은 snake_case로 가정합니다.
+        @Index(name = "IDX_ORDER_MEMBER_TIME", columnList = "member_id, orderedAt DESC")
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order {
@@ -25,7 +29,7 @@ public class Order {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToMany(mappedBy = "order" , cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderTicket> orderTickets = new ArrayList<>();
 
     private LocalDateTime orderedAt;
@@ -33,7 +37,7 @@ public class Order {
     // 모든 purchase_price의 가격의 합
     private Integer totalOrderAmount;
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
     @Builder

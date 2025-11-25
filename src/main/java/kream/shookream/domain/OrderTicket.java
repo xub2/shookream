@@ -7,11 +7,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
-@Table(name = "order_ticket")
+@Table(name = "order_ticket", indexes = {
+        // IDX_OT_TICKET_TIME: 특정 티켓의 판매 기간별 정산 데이터를 조회
+        @Index(name = "IDX_OT_TICKET_TIME", columnList = "ticket_id, createdAt ASC")
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderTicket {

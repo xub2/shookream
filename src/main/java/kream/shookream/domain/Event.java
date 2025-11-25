@@ -11,7 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "events")
+@Table(name = "events", indexes = {
+        // IDX_EVENT_SELLER_TIME: 판매자별 이벤트 목록을 시작일시(start_time) 최신순으로 조회
+        @Index(name = "IDX_EVENT_SELLER_TIME", columnList = "seller_id, start_time DESC"),
+
+        // IDX_EVENT_SEARCH: 이벤트 분류(event_type)를 필터링하고 시작일시(start_time)로 정렬하여 검색
+        @Index(name = "IDX_EVENT_SEARCH", columnList = "eventType, start_time DESC")
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Event {
@@ -32,10 +38,10 @@ public class Event {
     @OneToMany(mappedBy = "event")
     private List<Ticket> tickets = new ArrayList<>();
 
-//    @Column(nullable = false)
+    //    @Column(nullable = false)
     private Integer maxTicketCount;
 
-//    @Column(nullable = false)
+    //    @Column(nullable = false)
     private Integer currentTicketStockCount;
 
     private String eventName;

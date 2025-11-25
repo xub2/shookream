@@ -10,7 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "tickets")
+@Table(name = "tickets", indexes = {
+        // IDX_TICKET_EVENT_STATUS: 특정 이벤트의 'AVAILABLE' 티켓을 빠르게 검색
+        @Index(name = "IDX_TICKET_EVENT_STATUS", columnList = "event_id, status")
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Ticket {
