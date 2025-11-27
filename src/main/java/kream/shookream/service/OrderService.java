@@ -1,28 +1,44 @@
 package kream.shookream.service;
 
-import kream.shookream.domain.*;
+import kream.shookream.domain.Event;
+import kream.shookream.domain.Member;
+import kream.shookream.domain.Order;
+import kream.shookream.domain.Ticket;
+import kream.shookream.external.ExternalEventApi;
+import kream.shookream.external.KakaoTalkMessageApi;
+import kream.shookream.external.dto.ExternalEventResponse;
+import kream.shookream.external.event.EventJoinCompletedEvent;
 import kream.shookream.repository.EventRepository;
 import kream.shookream.repository.MemberRepository;
 import kream.shookream.repository.OrderRepository;
 import kream.shookream.repository.TicketRepository;
+import kream.shookream.service.facade.StockManagerFacade;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final EventRepository eventRepository;
     private final TicketRepository ticketRepository;
     private final MemberRepository memberRepository;
+    private final EventRepository eventRepository;
+
+    private final StockManagerFacade stockManagerFacade;
+
+    private final ExternalEventApi externalEventApi;
+    private final KakaoTalkMessageApi kakaoTalkMessageApi;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Order createOrder(Long memberId, List<Long> ticketsIds) {
@@ -31,69 +47,70 @@ public class OrderService {
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다"));
 
         // 락을 걸 티켓들 조회
+        // Event 엔티티에 락을 걸어야하는 이유? -> 외래키로 연결 되어 있기 때문 그래서 이벤트는 Ticket을 통해 접근해야함 -> Event에 락 걸어 조회
         List<Ticket> tickets = ticketRepository.findAllById(ticketsIds);
-
-        // Event 엔티티에 락을 걸어야하는 이유?
-        // 이벤트는 Ticket을 통해 접근해야함 -> Event에 락 걸어 조회
-
         if (tickets.size() != ticketsIds.size()) {
             throw new IllegalStateException("요청한 모든 티켓을 찾을 수 없습니다.");
         }
 
-        //todo 여기서 데드락 문제 해결해야함
-        Set<Long> distinctEventIds = tickets.stream()
-                .map(ticket -> ticket.getEvent().getId())
-                .collect(Collectors.toSet());
+        // Facade 패턴 적용
+        List<Long> sortedEventIds = stockManagerFacade.prepareLockAndStockForOrder(tickets);
 
-        List<Long> sortedEventIds = distinctEventIds.stream()
-                .sorted(Comparator.naturalOrder())
-                .collect(Collectors.toList());
-
-        for (Long eventId : sortedEventIds) {
-            Event eventWithLock = eventRepository.findWithPessimisticLockById(eventId)
-                    .orElseThrow(() -> new IllegalArgumentException("이벤트 ID : " + eventId + " 를 찾을 수 없습니다."));
-
-            // 💡 주의: 이 Event 객체가 tickets 리스트의 Ticket 객체 내부에 있는
-            // 오래된 Event 객체 참조를 대체하지 않더라도,
-            // JPA는 트랜잭션 내에서 ID가 같은 엔티티(eventWithLock)를 사용하여 Dirty Checking을 수행합니다.
-            // 하지만 안전을 위해 tickets 리스트 내의 Event 참조를 갱신하는 것이 좋습니다.
-            tickets.stream()
-                    .filter(t -> t.getEvent().getId().equals(eventId))
-                    .forEach(t -> t.setEvent(eventWithLock));
-        }
-
-        // 이 시점에 락 걸려있음 -> 안전하게 주문 생성
+        // 이 시점에 베타락 걸려있음 -> 안전하게 주문 생성
         Order newOrder = Order.createOrder(member, tickets);
 
-        return orderRepository.save(newOrder);
+        List<String> eventNameList = sortedEventIds.stream()
+                .map(eventId -> eventRepository.findById(eventId).get())
+                .map(event -> event.getEventName())
+                .collect(Collectors.toList());
+
+        // 이 시점에 상위 회사 (티켓 링크) API 호출 -> 해당 이벤트 참가 처리
+        ExternalEventResponse response = externalEventApi.registerParticipant(
+                sortedEventIds, memberId, eventNameList
+        );
+
+        if (!response.isSuccess()) {
+            throw new RuntimeException("티켓 링크 API 호출 실패 : " + response.getErrorMessage());
+        }
+
+        // 여기에서 insert 문 실행
+        Order savedOrder = orderRepository.save(newOrder);
+
+
+
+        // 3. 카카오톡 알림 발송 (비동기 처리)
+        eventPublisher.publishEvent(new EventJoinCompletedEvent(
+                sortedEventIds,
+                eventNameList,
+                member.getPhoneNumber()
+        ));
+
+        return savedOrder;
     }
 
     @Transactional
     public void cancelOrder(Long orderId) {
 
-        //todo 해당 order 조회시 연관된 티켓 다 가져와야함 -> fetch join 추가해야함 -> 해당 메서드 만들고 수정
-        Order order = orderRepository.findById(orderId)
+        // N + 1 문제 해결
+        Order order = orderRepository.findWithOrderDetailAndTicketById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다"));
 
         // 락 필요한 이벤트(취소 대상) 조회 및 해당 이벤트 락 걸기 -> 수정이기 때문
-        List<Long> eventIdsToLock = order.getOrderTickets().stream()
-                .map(orderTicket -> orderTicket.getTicket())
-                .map(ticket -> ticket.getEvent())
-                .map(event -> event.getId())
-                .distinct()
-                .sorted() // 데드락 해결하기 위한 오름차순 정리
-                .collect(Collectors.toList());
+        stockManagerFacade.prepareLockForCancel(order.getOrderTickets());
 
-
-        for (Long eventId : eventIdsToLock) {
-            eventRepository.findWithPessimisticLockById(eventId)
-                    .orElseThrow(() -> new IllegalArgumentException("아이디가 " + eventId + "인 이벤트를 찾을 수 없습니다"));
-
-            // 락 걸린 상태로 영속성 컨텍스트 올라옴 -> 비즈니스 메서드 안전하게 호출 가능(Order.cancel -> 재고 증가 로직)
-        }
-
+        // 주문 취소 (취소 + 재고 복구) + dirtyCheck 실행
         order.cancel();
 
-        // dirtyCheck 실행
     }
+
+    /**
+     * 가상 시나리오 : 유저가 이벤트 예약시 DB에 좌석 정보 저장 -> 외부 API (결제 시스템 및 카카오톡 알림) 호출 해야함
+     * 만약 위 로직들이 하나의 트랜잭션으로 묶이게 되면 외부 API 실패했다고 (예를 들면 중요하지 않은 알림 톡 API) 기존 예약 로직 까지 전부 실패하게 된다
+     *
+     * 1. DB커넥션 점유 시간 최소화 -> 트랜잭션 범위 조정
+     * 2. 외부 API 장애 발생 시 예약 정보 유지 -> 후보정
+     * 3. 카카오톡 알림 등은 트랜잭션에서 분리하여 독립적 시행
+     *
+     * 예약을 하면 외부 API 에서 예약 번호를 받아서 참자가 정보에 저장해둬야 한다
+     */
 }
