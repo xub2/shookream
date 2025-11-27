@@ -71,9 +71,10 @@ public class Event {
         this.currentTicketStockCount--;
     }
 
+    // update 쿼리 나감
     public void increaseTicketStock() {
         if (this.currentTicketStockCount >= this.maxTicketCount) {
-            return;
+            throw new RuntimeException("판매 가능 수량을 초과하였습니다.");
         }
 
         this.currentTicketStockCount++;
