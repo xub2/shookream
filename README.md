@@ -39,7 +39,7 @@
 
 ## 🔧개선 사항
 
-### 1) 인덱스 없이 Full Table Scan 문제 발생
+### 1) 인덱스 없이 Full Text Scan 문제 발생
 - 증상 : 티켓 및 예약 조회 API의 평균 응답 속도가 70ms 이상 소요되며, 동시 접속 시 DB CPU 부하 발생하였습니다.
 - 원인 : where 조건절과 order by 절에 포함된 컬럼들에 적절한 인덱스의 부재 -> Full Text Scan 및 FileSort 가 발생하였습니다.
 - 결과 : 카디널리티를 고려하여 최적의 복합인덱스(커버링 인덱스)를 설계하고 적용하여 평균 조회 응답시간 약 71% 단축 + Full Text Scan 및 FileSort 를 제거하였습니다.
