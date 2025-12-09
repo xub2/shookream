@@ -32,8 +32,7 @@
 
 ## ERD
 <p align="center">
-<img src="https://github.com/user-attachments/assets/0a81f172-0534-45ee-bbd8-2745a1aea73b" alt="flow" width="100%" height="100%">
-</p>
+<img width="3200" height="1654" alt="Image" src="https://github.com/user-attachments/assets/667259c2-19c6-49c7-8e78-96b0e4103ab8" />
 
 ## 개선 사항
 <table>
