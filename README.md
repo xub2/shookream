@@ -11,18 +11,20 @@
 ## 프로젝트 소개
 
 실제 티켓 판매처와 소비자 사이의 중간 서비스에서 발생할 수 있는 다양한 동시성 문제와 병목 현상을 측정하고 해소하기 위한 프로젝트입니다.
+프론트가 없는 API 구성의 프로젝트이며, 데이터 정합성이 매우 중요한 서비스로써 
 
 # 개발 목적
 
 **'아니 왜 나 이거 접속조차 안되냐?' 라는 의문에서 시작하여 '어느 부분에서 왜 이럴까를 확인해보고 싶었습니다'**
 
-- 
-- 
-- 
+- 기존 동시성 문제 해소를 위해 진행했던 수강신청 프로젝트는 너무 서비스 간의 결합도가 강하여 개선이 어려움
+- 유지 보수성을 높일 수 있도록 객체지향 적 설계 및 구현 적용
+- 모니터링과 부하테스트를 통해 실제 병목 지점 분석 및 최적화
 
 ## 📚 Tech Stack
 
 <img src="https://img.shields.io/badge/Java-3578E5?style=for-the-badge&logo=Java&logoColor=white"> <img src="https://img.shields.io/badge/SpringBoot-336F19?style=for-the-badge&logo=Springboot&logoColor=white"> 
+<img src="https://img.shields.io/badge/Spring-336F19?style=for-the-badge&logo=Spring&logoColor=white"> 
 <img src="https://img.shields.io/badge/MySQL-A2A99F?style=for-the-badge&logo=mySQL&logoColor=white"> 
 <img src="https://img.shields.io/badge/Hibernate-5a999f?style=for-the-badge&logo=Hibernate&logoColor=white">
 <img src="https://img.shields.io/badge/Docker-3578E5?style=for-the-badge&logo=Docker&logoColor=white">
@@ -33,7 +35,7 @@
 <img src="https://github.com/user-attachments/assets/0a81f172-0534-45ee-bbd8-2745a1aea73b" alt="flow" width="100%" height="100%">
 </p>
 
-## 실행 결과
+## 개선 사항
 <table>
   <tr>
     <td><img src="https://github.com/user-attachments/assets/6416cb00-31c8-4b3d-8b0e-ea2c22d4ac25"" width="200" style="margin: 5px;"></td>
