@@ -33,11 +33,11 @@
 <img src="https://img.shields.io/badge/Docker-3578E5?style=for-the-badge&logo=Docker&logoColor=white">
 <img src="https://img.shields.io/badge/Redis-fc2003?style=for-the-badge&logo=Redis&logoColor=white">
 
-## ERD
+## 📈ERD
 <p align="center">
 <img width="3200" height="1654" alt="Image" src="https://github.com/user-attachments/assets/667259c2-19c6-49c7-8e78-96b0e4103ab8" />
 
-## 개선 사항
+## 🔧개선 사항
 
 ### 1) 인덱스 없이 Full Table Scan 문제 발생
 - 증상 : 티켓 및 예약 조회 API의 평균 응답 속도가 70ms 이상 소요되며, 동시 접속 시 DB CPU 부하 발생하였습니다.
