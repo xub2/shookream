@@ -10,16 +10,17 @@
 
 ## 프로젝트 소개
 
-실제 티켓 판매처와 소비자 사이의 중간 서비스에서 발생할 수 있는 다양한 동시성 문제와 병목 현상을 측정하고 해소하기 위한 프로젝트입니다.
-프론트가 없는 API 구성의 프로젝트이며, 데이터 정합성이 매우 중요한 서비스로써 
+- 실제 티켓 판매처와 소비자 사이의 중간 서비스에서 발생할 수 있는 다양한 동시성 문제와 병목 현상을 측정하고 해소하기 위한 프로젝트입니다.
+- 프론트가 없는 API 구성의 프로젝트이며, 데이터 정합성이 매우 중요한 서비스로써 백엔드 로직을 메인으로 프로젝트를 진행하였습니다.
 
 # 개발 목적
 
 **'아니 왜 나 이거 접속조차 안되냐?' 라는 의문에서 시작하여 '어느 부분에서 왜 이럴까를 확인해보고 싶었습니다'**
 
-- 기존 동시성 문제 해소를 위해 진행했던 수강신청 프로젝트는 너무 서비스 간의 결합도가 강하여 개선이 어려움
-- 유지 보수성을 높일 수 있도록 객체지향 적 설계 및 구현 적용
-- 모니터링과 부하테스트를 통해 실제 병목 지점 분석 및 최적화
+- 기존 동시성 문제 해소를 위해 진행했던 수강신청 프로젝트는 너무 서비스 간의 결합도가 강하여 개선이 어려움.
+- 유지 보수성을 높일 수 있도록 객체지향 적 설계 및 구현 적용.
+- 모니터링과 부하테스트를 통해 실제 병목 지점 분석 및 최적화.
+- 주요 기능은 이벤트에 대한 티켓을 예매 하는 기능임.
 
 ## 📚 Tech Stack
 
@@ -35,17 +36,12 @@
 <img width="3200" height="1654" alt="Image" src="https://github.com/user-attachments/assets/667259c2-19c6-49c7-8e78-96b0e4103ab8" />
 
 ## 개선 사항
-<table>
-  <tr>
-    <td><img src="https://github.com/user-attachments/assets/6416cb00-31c8-4b3d-8b0e-ea2c22d4ac25"" width="200" style="margin: 5px;"></td>
-    <td><img src="https://github.com/user-attachments/assets/a997c03e-44e2-4ad3-b42f-d2bf91b67ec8" width="200" style="margin: 5px;"></td>
-    <td><img src="https://github.com/user-attachments/assets/6ecf739f-5798-4435-82e1-6223d9d87278"" width="200" style="margin: 5px;"></td>
-    
-  </tr>
-  <tr>
-    <td><img src="https://github.com/user-attachments/assets/8bdd595c-0951-4e99-800c-83f847c2edd1"" width="200" style="margin: 5px;"></td>
-    <td><img src="https://github.com/user-attachments/assets/347c808c-c370-4ed3-862f-ffb79bf90801" width="200" style="margin: 5px;"></td>
-    <td><img src="https://github.com/user-attachments/assets/e9ece844-95e3-49e7-8d65-4a269643c325" width="200" style="margin: 5px;"></td>
-  </tr>
-</table>
 
+### 1) 인덱스 없이 Full Table Scan 문제 발생
+- 증상 : 티켓 및 예약 조회 API의 평균 응답 속도가 70ms 이상 소요되며, 동시 접속 시 DB CPU 부하 발생.
+- 원인 : where 조건절과 order by 절에 포함된 컬럼들에 적절한 인덱스의 부재 -> Full Text Scan 및 FileSort 발생.
+- 결과 : 카디널리티를 고려하여 최적의 복합인덱스(커버링 인덱스)를 설계하고 적용하여 평균 조회 응답시간 약 71% 단축 + Full Text Scan 및 FileSort 제거
+
+### 2) 인덱스 오버헤드로 인한 응답 지연 분석 및 최적화 
+- 증상 : 특정 이벤트의 티켓 목록을 조회할 때, 쿼리 최적화를 위해 복합 인덱스(event_id, status)를 추가하였으나 Query Explain 상 조회되는 Row 수는 
+9개 → 5개로 줄어들었으나, 실제 API 응답 시간은 오히려 미세하게 증가하는 현상 발생.
