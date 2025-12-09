@@ -1,4 +1,7 @@
 # Shookream
+<p align="center">
+<img src="https://github.com/user-attachments/assets/48fc2ccf-512f-43ef-aaa0-7faed537ba27" alt="로고" width="30%" height="30%">
+</p>
 
 # 개발 기간
 > 2025.11 ~ 2025.12 (리팩토링 중)
