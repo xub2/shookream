@@ -22,7 +22,11 @@
 
 ## 📚 Tech Stack
 
-<img src="https://img.shields.io/badge/dart-3578E5?style=for-the-badge&logo=dart&logoColor=white"/> <img src="https://img.shields.io/badge/python-3178C6?style=for-the-badge&logo=python&logoColor=white"/> <img src="https://img.shields.io/badge/Flutter-06B6D4?style=for-the-badge&logo=Flutter&logoColor=white"/> <img src="https://img.shields.io/badge/gemini-5a999f?style=for-the-badge&logo=gemini&logoColor=white"/>
+<img src="https://img.shields.io/badge/Java-3578E5?style=for-the-badge&logo=Java&logoColor=white"> <img src="https://img.shields.io/badge/SpringBoot-336F19?style=for-the-badge&logo=Springboot&logoColor=white"> 
+<img src="https://img.shields.io/badge/MySQL-A2A99F?style=for-the-badge&logo=mySQL&logoColor=white"> 
+<img src="https://img.shields.io/badge/Hibernate-5a999f?style=for-the-badge&logo=Hibernate&logoColor=white">
+<img src="https://img.shields.io/badge/Docker-3578E5?style=for-the-badge&logo=Docker&logoColor=white">
+<img src="https://img.shields.io/badge/Redis-fc2003?style=for-the-badge&logo=Redis&logoColor=white">
 
 ## ERD
 <p align="center">
