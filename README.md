@@ -38,6 +38,8 @@
 <img width="3200" height="1654" alt="Image" src="https://github.com/user-attachments/assets/667259c2-19c6-49c7-8e78-96b0e4103ab8" />
 
 ## 🔧개선 사항
+해당 내용으로 "우리 같이 백엔드 하자" 라는 글을 작성하고 있습니다 ("https://bdisappointed.tistory.com/category/%EC%9A%B0%EB%A6%AC%20%EA%B0%99%EC%9D%B4%20%EB%B0%B1%EC%97%94%EB%93%9C%20%ED%95%98%EC%9E%90")
+
 
 ### 1) 인덱스 없이 Full Text Scan 문제 발생
 - 증상 : 티켓 및 예약 조회 API의 평균 응답 속도가 70ms 이상 소요되며, 동시 접속 시 DB CPU 부하 발생하였습니다.
@@ -46,7 +48,6 @@
   <p align="center">
   <img alt="image" src="https://github.com/user-attachments/assets/ef0fdfbc-9c23-4de9-a038-958863dab332" width="50%" height="50%"/>
   </p>
-
 
 ### 2) 인덱스 오버헤드로 인한 응답 지연 분석 및 최적화 (쿼리 플랜의 Rows 가 줄어든다고 무조건 성능 좋은게 아님)
 - 증상 : 특정 이벤트의 티켓 목록을 조회할 때, 쿼리 최적화를 위해 복합 인덱스(event_id, status)를 추가하였으나 Query Explain 상 조회되는 Row 수는
